@@ -9,6 +9,12 @@ __pycache__/
 #.idea files
 .idea/
 
+#data folder
+data/
+
+# .DS_STORE file for vscode
+.DS_STORE
+
 # Distribution / packaging
 .Python
 build/
