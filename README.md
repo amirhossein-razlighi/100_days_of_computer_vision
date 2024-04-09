@@ -13,4 +13,4 @@ This repository contains the codes for **100 days of computer vision** challenge
   
     Please refer to [this readme file](FromScratch/README.md) for in-depth information on the implemented projects from scratch. The covered projects are:
 
-    [Image Formation](FromScratch/Image_Formation/main.py) / ...
+    [Image Formation](FromScratch/Image_Formation/main.py) / [ViT from scratch](FromScratch/ViT/main.ipynb)
