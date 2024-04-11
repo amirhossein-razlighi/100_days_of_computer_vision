@@ -4,8 +4,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 
-def get_camera_matrix(focal_length, sensor_size, image_size):
-    # focal_length: float, sensor_size: tuple, image_size: tuple
+def get_camera_matrix(focal_length: float, sensor_size: tuple, image_size: tuple):
     fx = focal_length * image_size[0] / sensor_size[0]
     fy = focal_length * image_size[1] / sensor_size[1]
     cx = image_size[0] / 2
@@ -13,8 +12,9 @@ def get_camera_matrix(focal_length, sensor_size, image_size):
     return np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]])
 
 
-def get_projection_matrix(camera_matrix, rotation_matrix, translation_vector):
-    # camera_matrix: np.array, rotation_matrix: np.array, translation_vector: np.array
+def get_projection_matrix(
+    camera_matrix: np.array, rotation_matrix: np.array, translation_vector: np.array
+):
     return np.dot(
         camera_matrix, np.hstack((rotation_matrix, translation_vector[:, np.newaxis]))
     )
@@ -96,10 +96,10 @@ if __name__ == "__main__":
         fig_2d = go.Figure(
             data=[go.Heatmap(z=img, colorscale="gray", zmin=0, zmax=255)]
         )
-        subs.add_trace(fig_2d.data[0], row=i+1, col=2)
+        subs.add_trace(fig_2d.data[0], row=i + 1, col=2)
         subs.add_trace(
             go.Scatter(x=x[0], y=x[1], mode="markers", marker=dict(size=5)),
-            row=i+1,
+            row=i + 1,
             col=1,
         )
 
