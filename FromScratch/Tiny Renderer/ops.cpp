@@ -1,3 +1,4 @@
+#include "ops.h"
 #include "tgaimage.h"
 #include <cmath>
 #include <iostream>
@@ -30,6 +31,23 @@ void line(int x0, int y0, int x1, int y1, TGAImage &image, TGAColor color) {
     if (error > dx) {
       y += (y1 > y0 ? 1 : -1);
       error -= dx * 2;
+    }
+  }
+}
+
+void wireframe_obj(Model &model, TGAImage &image, TGAColor color) {
+  for (int i = 0; i < model.nfaces(); i++) {
+    std::vector<int> face = model.face(i);
+    for (int j = 0; j < 3; j++) {
+      Vec3f v0 = model.vert(face[j]);
+      Vec3f v1 = model.vert(face[(j + 1) % 3]);
+      int x0 =
+          (v0.x + 1.) * image.get_width() / 2.; // from [-1, 1] to [0, width]
+      int y0 =
+          (v0.y + 1.) * image.get_height() / 2.; // from [-1, 1] to [0, height]
+      int x1 = (v1.x + 1.) * image.get_width() / 2.;
+      int y1 = (v1.y + 1.) * image.get_height() / 2.;
+      line(x0, y0, x1, y1, image, color);
     }
   }
 }
