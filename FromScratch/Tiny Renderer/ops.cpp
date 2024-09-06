@@ -51,3 +51,10 @@ void wireframe_obj(Model &model, TGAImage &image, TGAColor color) {
     }
   }
 }
+
+void triangle_contour(Vec2f t0, Vec2f t1, Vec2f t2, TGAImage &image,
+                      TGAColor color) {
+  line(t0.x, t0.y, t1.x, t1.y, image, color);
+  line(t1.x, t1.y, t2.x, t2.y, image, color);
+  line(t2.x, t2.y, t0.x, t0.y, image, color);
+}

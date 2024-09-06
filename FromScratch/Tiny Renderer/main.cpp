@@ -11,7 +11,9 @@ int main(int argc, char **argv) {
   width = 500;
   height = 500;
   TGAImage image(width, height, TGAImage::RGB);
-  wireframe_obj(model, image, white);
+  // wireframe_obj(model, image, white);
+  triangle_contour(Vec2f(100, 100), Vec2f(400, 100), Vec2f(200, 400), image,
+                   white);
   image.flip_vertically();
   image.write_tga_file("output.tga");
   return 0;
