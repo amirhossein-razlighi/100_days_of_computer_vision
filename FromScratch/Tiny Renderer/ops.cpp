@@ -58,3 +58,25 @@ void triangle_contour(Vec2f t0, Vec2f t1, Vec2f t2, TGAImage &image,
   line(t1.x, t1.y, t2.x, t2.y, image, color);
   line(t2.x, t2.y, t0.x, t0.y, image, color);
 }
+bool compare_vec2f_y(const Vec2f &a, const Vec2f &b) { return a.y < b.y; }
+
+void triangle(Vec2f t0, Vec2f t1, Vec2f t2, TGAImage &image, TGAColor color) {
+  std::vector<Vec2f> pts(3);
+  pts[0] = t0;
+  pts[1] = t1;
+  pts[2] = t2;
+  std::sort(pts.begin(), pts.end(), compare_vec2f_y);
+
+  float grad_0 = (pts[2].y - pts[0].y) / (pts[2].x - pts[0].x);
+  float grad_1 = (pts[2].y - pts[1].y) / (pts[2].x - pts[1].x);
+
+  float x1 = pts[1].x;
+  float x0 = pts[0].x;
+  int y1 = pts[1].y;
+  for (int y0 = pts[0].y; y0 <= pts[2].y; y0++) {
+    line(x0, y0, x1, y1, image, color);
+    x0 += 1 / grad_0;
+    x1 += 1 / grad_1;
+    y1++;
+  }
+}
