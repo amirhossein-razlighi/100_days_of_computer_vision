@@ -79,13 +79,17 @@ This repository contains the codes for **100 days of computer vision** challenge
       ![Legendre Polynomials](Images/Legendre_Polynomials_SH.png)
 
       Spherical Harmonics with $l=1$ and $m=-1$:
-      ...
+      
+      https://github.com/user-attachments/assets/251683a4-0f1a-4ac0-9b97-92cde95ea6fd
       
       Spherical Harmonics with $l=1$ and $m=0$:
-      ...
+      
+      https://github.com/user-attachments/assets/6d7f1fa8-091c-4103-bf85-f82dc0dc3bce
       
       Spherical Harmonics with $l=1$ and $m=1$:
-      ...
+
+      https://github.com/user-attachments/assets/191b21d4-434a-4632-9cc4-f08b64f41842
+
       
    5. [Grid Encoding (like InstantNGP) From Scratch](FromScratch/Grid_Encoding/3d_grid.ipynb)
    
