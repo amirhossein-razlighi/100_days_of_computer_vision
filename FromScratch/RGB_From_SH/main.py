@@ -7,7 +7,7 @@ from sh_utils import *
 import imageio
 import os
 
-IMAGE_SIZE = 128
+IMAGE_SIZE = 256
 
 
 def load_from_checkpoint(checkpoint_address, model):
@@ -33,15 +33,10 @@ class SHPredictor(nn.Module):
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
             nn.Linear(256, 3 * self.num_sh_coeffs),  # 3 is for RGB
         )
-
-        nn.init.xavier_uniform_(self.fc[0].weight)
-        nn.init.xavier_uniform_(self.fc[2].weight)
-        nn.init.xavier_uniform_(self.fc[4].weight)
-        nn.init.constant_(self.fc[0].bias, 0)
-        nn.init.constant_(self.fc[2].bias, 0)
-        nn.init.constant_(self.fc[4].bias, 0)
 
     def forward(self, x):
         """
@@ -159,26 +154,42 @@ def train(
             torch.save(model.state_dict(), "model.pth")
 
 
-input_dim = 3
-sh_order = 2
+input_dim = 2
+sh_order = 3
 device = (
     "cuda"
     if torch.cuda.is_available()
     else "mps" if torch.backends.mps.is_available() else "cpu"
 )
 model = SHPredictor(input_dim, sh_order)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+if os.path.exists("model.pth"):
+    model = load_from_checkpoint("model.pth", model)
+    print("Model loaded from checkpoint.")
+
+model.to(device)
+LR = 0.0001
+optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
 target_image = Image.open("bunny.jpg")
 target_image = target_image.resize((IMAGE_SIZE, IMAGE_SIZE))
 target_colors = torch.tensor(np.array(target_image).reshape(-1, 3) / 255.0).float()
+target_colors = target_colors.to(device)
 
-# Assuming random input features (XYZ coordinates) and directions (unit vectors)
-input_features = torch.rand((IMAGE_SIZE * IMAGE_SIZE, input_dim))
-directions = torch.rand((IMAGE_SIZE * IMAGE_SIZE, 3))
-directions = directions / torch.norm(
-    directions, dim=1, keepdim=True
+x, y = np.meshgrid(
+    np.linspace(-1, 1, IMAGE_SIZE), np.linspace(-1, 1, IMAGE_SIZE), indexing="ij"
+)
+
+x = x.reshape(-1)
+y = y.reshape(-1)
+
+input_features = torch.tensor(np.stack([x, y], axis=1)).float()
+input_features = input_features.to(device)
+
+directions = torch.rand((IMAGE_SIZE * IMAGE_SIZE, 3)).to(device)
+directions = directions / torch.norm(directions, dim=1, keepdim=True).to(
+    device
 )  # Normalize directions
 
-num_epochs = 10_000 * IMAGE_SIZE // 64
+num_epochs = 3000
 train(model, optimizer, input_features, target_colors, directions, sh_order, num_epochs)

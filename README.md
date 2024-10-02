@@ -105,7 +105,19 @@ This repository contains the codes for **100 days of computer vision** challenge
 
    6. [RGB Prediction Using Spherical Harmonics](FromScratch/Spherical_Harmonics/main.ipynb)
 
-      The RGB prediction using Spherical Harmonics:
+      The RGB prediction using Spherical Harmonics. SH Order is $3$ and the features are simple $(x,y)$ coordinates of the RGB image.
+
+      Target Image (Ground Truth):
+
+      ![Ground truth](Images/bunny_gt.jpg)
+
+      Predicted Image:
+
+      ![Predicted Image](Images/bunny_estimate.png)
+
+      Training Process (Gif):
+      
+      ![Training Process](Images/training_process.gif)
       
    7. [Tiny Renderer from Scratch](FromScratch/Tiny%20Renderer/main.cpp)
    
