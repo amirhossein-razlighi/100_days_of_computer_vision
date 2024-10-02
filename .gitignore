@@ -137,6 +137,11 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+
+# renders/ folder
+renders/
+
 *.o
 *.a
 *.tga
+*.pth

@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 from sh_utils import *
+import imageio
+import os
 
-IMAGE_SIZE = 50
+IMAGE_SIZE = 128
 
 
 def load_from_checkpoint(checkpoint_address, model):
@@ -33,6 +35,13 @@ class SHPredictor(nn.Module):
             nn.ReLU(),
             nn.Linear(256, 3 * self.num_sh_coeffs),  # 3 is for RGB
         )
+
+        nn.init.xavier_uniform_(self.fc[0].weight)
+        nn.init.xavier_uniform_(self.fc[2].weight)
+        nn.init.xavier_uniform_(self.fc[4].weight)
+        nn.init.constant_(self.fc[0].bias, 0)
+        nn.init.constant_(self.fc[2].bias, 0)
+        nn.init.constant_(self.fc[4].bias, 0)
 
     def forward(self, x):
         """
@@ -65,43 +74,24 @@ def render_colors(sh_coeffs, directions, sh_order):
     return SH2RGB(evaled_sh_colors)
 
 
-# Example training loop
-def train(
-    model,
-    optimizer,
-    input_features,
-    ground_truth_colors,
-    directions,
-    sh_order,
-    num_epochs,
-):
-    criterion = nn.MSELoss()
+def append_to_gif(image_path, gif_path):
+    """
+    Append a new image to the GIF.
 
-    for epoch in range(num_epochs):
-        model.train()
-        optimizer.zero_grad()
-
-        # Predict SH coefficients
-        sh_coeffs = model(input_features)
-
-        # Render colors
-        rendered_colors = render_colors(sh_coeffs, directions, sh_order)
-
-        # Compute loss
-        loss = criterion(rendered_colors, ground_truth_colors)
-
-        # Backpropagation
-        loss.backward()
-        optimizer.step()
-
-        if (epoch + 1) % 10 == 0:
-            print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.7f}")
-            model.eval()
-            rendered_colors = render_colors(model(input_features), directions, sh_order)
-            plot_images(ground_truth_colors, rendered_colors)
+    Parameters:
+    - image_path: str, the path to the new image.
+    - gif_path: str, the path to the GIF file.
+    """
+    new_image = imageio.imread(image_path)[..., :3]
+    if os.path.exists(gif_path):
+        existing_gif = imageio.mimread(gif_path)
+        existing_gif.append(new_image)
+        imageio.mimsave(gif_path, existing_gif, duration=0.5)
+    else:
+        imageio.mimsave(gif_path, [new_image], duration=0.5)
 
 
-def plot_images(ground_truth, rendered):
+def plot_images(ground_truth, rendered, image_path):
     """
     Plot the ground truth and rendered images.
 
@@ -125,14 +115,57 @@ def plot_images(ground_truth, rendered):
     plt.subplot(1, 2, 2)
     plt.title("Rendered")
     plt.imsave(
-        "rendered.png",
+        image_path,
         rendered.reshape(IMAGE_SIZE, IMAGE_SIZE, 3).cpu().detach().numpy().clip(0, 1),
     )
     plt.close("all")
 
 
+def train(
+    model,
+    optimizer,
+    input_features,
+    ground_truth_colors,
+    directions,
+    sh_order,
+    num_epochs,
+):
+    criterion = nn.MSELoss()
+
+    for epoch in range(num_epochs):
+        model.train()
+        optimizer.zero_grad()
+
+        sh_coeffs = model(input_features)
+
+        rendered_colors = render_colors(sh_coeffs, directions, sh_order)
+
+        loss = criterion(rendered_colors, ground_truth_colors)
+
+        loss.backward()
+        optimizer.step()
+
+        if (epoch + 1) % 50 == 0:
+            print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {loss.item():.7f}")
+            model.eval()
+            rendered_colors = render_colors(model(input_features), directions, sh_order)
+
+            if not os.path.exists("renders"):
+                os.makedirs("renders", exist_ok=True)
+            image_path = f"renders/rendered_epoch_{epoch + 1}.png"
+            plot_images(ground_truth_colors, rendered_colors, image_path)
+            append_to_gif(image_path, "training_process.gif")
+
+            torch.save(model.state_dict(), "model.pth")
+
+
 input_dim = 3
 sh_order = 2
+device = (
+    "cuda"
+    if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available() else "cpu"
+)
 model = SHPredictor(input_dim, sh_order)
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
@@ -143,7 +176,9 @@ target_colors = torch.tensor(np.array(target_image).reshape(-1, 3) / 255.0).floa
 # Assuming random input features (XYZ coordinates) and directions (unit vectors)
 input_features = torch.rand((IMAGE_SIZE * IMAGE_SIZE, input_dim))
 directions = torch.rand((IMAGE_SIZE * IMAGE_SIZE, 3))
-directions = directions / torch.norm(directions, dim=1, keepdim=True) # Normalize directions
+directions = directions / torch.norm(
+    directions, dim=1, keepdim=True
+)  # Normalize directions
 
-num_epochs = 10000
+num_epochs = 10_000 * IMAGE_SIZE // 64
 train(model, optimizer, input_features, target_colors, directions, sh_order, num_epochs)

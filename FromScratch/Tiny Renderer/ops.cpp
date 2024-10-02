@@ -58,25 +58,40 @@ void triangle_contour(Vec2f t0, Vec2f t1, Vec2f t2, TGAImage &image,
   line(t1.x, t1.y, t2.x, t2.y, image, color);
   line(t2.x, t2.y, t0.x, t0.y, image, color);
 }
-bool compare_vec2f_y(const Vec2f &a, const Vec2f &b) { return a.y < b.y; }
+bool compare_vec2i_y(const Vec2i &a, const Vec2i &b) { return a.y < b.y; }
 
-void triangle(Vec2f t0, Vec2f t1, Vec2f t2, TGAImage &image, TGAColor color) {
-  std::vector<Vec2f> pts(3);
+void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color) {
+  std::vector<Vec2i> pts(3);
   pts[0] = t0;
   pts[1] = t1;
   pts[2] = t2;
-  std::sort(pts.begin(), pts.end(), compare_vec2f_y);
+  std::sort(pts.begin(), pts.end(), compare_vec2i_y);
 
-  float grad_0 = (pts[2].y - pts[0].y) / (pts[2].x - pts[0].x);
-  float grad_1 = (pts[2].y - pts[1].y) / (pts[2].x - pts[1].x);
-
-  float x1 = pts[1].x;
-  float x0 = pts[0].x;
-  int y1 = pts[1].y;
-  for (int y0 = pts[0].y; y0 <= pts[2].y; y0++) {
-    line(x0, y0, x1, y1, image, color);
-    x0 += 1 / grad_0;
-    x1 += 1 / grad_1;
-    y1++;
+  int total_height = pts[2].y - pts[0].y;
+  int segment_height = pts[1].y - pts[0].y;
+  for (int y = pts[0].y; y <= pts[1].y; y++) {
+    float alpha = (float)(y - pts[0].y) / total_height;
+    float beta = (float)(y - pts[0].y) / segment_height;
+    Vec2i A = pts[0] + (pts[2] - pts[0]) * alpha;
+    Vec2i B = pts[0] + (pts[1] - pts[0]) * beta;
+    if (A.x > B.x) {
+      std::swap(A, B);
+    }
+    for (int x = A.x; x <= B.x; x++) {
+      image.set(x, y, color);
+    }
+  }
+  segment_height = pts[2].y - pts[1].y;
+  for (int y = pts[1].y; y <= pts[2].y; y++) {
+    float alpha = (float)(y - pts[0].y) / total_height;
+    float beta = (float)(y - pts[1].y) / segment_height;
+    Vec2i A = pts[0] + (pts[2] - pts[0]) * alpha;
+    Vec2i B = pts[1] + (pts[2] - pts[1]) * beta;
+    if (A.x > B.x) {
+      std::swap(A, B);
+    }
+    for (int x = A.x; x <= B.x; x++) {
+      image.set(x, y, color);
+    }
   }
 }
