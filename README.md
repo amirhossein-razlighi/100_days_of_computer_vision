@@ -152,5 +152,20 @@ This repository contains the codes for **100 days of computer vision** challenge
 
       ![Triangle Filled](Images/filled_output.jpeg)
 
-   8. [Diffusion model from scratch](FromScratch/Diffusion/main.py)
+
+   8. [Semantic Segmentation of Carla dataset](FromScratch/Semantic%20Segmentation/U_Net_Segmentation.ipynb)
+      
+      Implemented UNet from scratch and trained on CARLA autonomous driving dataset:
+
+      ![Segmentation Results](Images/Unet_1.png)
+      ![Segmentation Results](Images/Unet_2.png)
+      ![Segmentation Results](Images/Unet_3.png)
+
+      Also, implemented __Attention UNet__ from scratch and trained on CARLA data:
+
+      ![Attention UNet](Images/AUnet_1.png)
+      ![Attention UNet](Images/AUnet_2.png)
+      ![Attention UNet](Images/AUnet_3.png)
+      
+   9.  [Diffusion model from scratch](FromScratch/Diffusion/main.py)
    ...
